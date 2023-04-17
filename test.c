@@ -9,7 +9,8 @@
     char buf[256]; \
     ryu_print((input), (fmt), buf, sizeof(buf)); \
     if (strcmp(buf, (expected)) != 0) { \
-        fprintf(stderr, "expected %s, got %s\n", (expected), buf); \
+        fprintf(stderr, "line %d: expected %s, got %s\n", \
+            __LINE__, (expected), buf); \
         exit(1); \
     } \
 }
@@ -20,11 +21,23 @@ int main(void) {
     test('E', 212123123.123188832, "2.1212312312318882E8");
     test('f', 9223372036854775808.0, "9223372036854776000");
     test('f', 0.000123123001, "0.000123123001");
-    test('f', 0, "0");
-    test('f', 1, "1");
-    test('f', -1, "-1");
-    test('f', -0, "0");
     test('f', 1.3441331, "1.3441331");
+    test('f', 1.0, "1");
+    test('f', -1.0, "-1");
+    test('f', -0.0, "-0");
+    test('f', 0.5, "0.5");
+    test('f', -0.5, "-0.5");
+    test('f', 0.0, "0");
+    test('f', -0.0, "-0");
+    test('f', 0.5, "0.5");
+    test('f', -0.5, "-0.5");
+    test('f', 0.0, "0");
+    test('f', -0.01, "-0.01");
+    test('f', -0.015, "-0.015");
+    test('f', 5000.0, "5000");
+    test('f', 0000.0, "0");
+    test('f', 5000000000000000000.0, "5000000000000000000");
+    test('f', 5123.0, "5123");
 
     char buf[32];
     size_t n1 = ryu_print(-112.89123883, 'f', buf, sizeof(buf));

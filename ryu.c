@@ -39,6 +39,7 @@
 //     size by about 10x (only one case, and only double) at the cost of some
 //     performance. Currently requires MSVC intrinsics.
 
+#include <stdio.h>
 #include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -1878,11 +1879,13 @@ size_t ryu_print(double d, char fmt, char dst[], size_t nbytes) {
                 write_char(&wr, '0');
             }
             write_char(&wr, *(p++));
-            p++;
-            while (*p) write_char(&wr, *(p++));
+            if (*p) {
+                p++;
+                while (*p) write_char(&wr, *(p++));
+            }
         } else {
             write_char(&wr, *(p++));
-            p++;
+            if (*p) p++;
             for (int i = 0; i < en; i++) {
                 if (*p) {
                     write_char(&wr, *(p++));
@@ -1890,6 +1893,7 @@ size_t ryu_print(double d, char fmt, char dst[], size_t nbytes) {
                     write_char(&wr, '0');
                 }
             }
+            
             if (*p && !(*p == '0' && *(p+1) == '\0')) {
                 write_char(&wr, '.');
                 while (*p) write_char(&wr, *(p++));
