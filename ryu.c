@@ -1836,7 +1836,7 @@ static void write_char(struct writer *wr, char b) {
 }
 
 RYU_EXTERN
-size_t ryu_print(double d, char fmt, char dst[], size_t nbytes) {
+size_t ryu_string(double d, char fmt, char dst[], size_t nbytes) {
     struct writer wr = { .dst = dst, .n = nbytes };
     char buf[80];
     switch (fmt) {

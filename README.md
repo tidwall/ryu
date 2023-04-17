@@ -1,11 +1,11 @@
 # ryu
 
-Print floating-point numbers to strings in their shortest, most accurate
+Convert floating point numbers to strings in their shortest, most accurate
 representation.
 
 This implementation consists mostly of the code taken directly from the
 original work in the [ulfjack/ryu](https://github.com/ulfjack/ryu) project,
-with the additon of a new `ryu_print` function, that provides a little extra
+with the additon of a new `ryu_string` function, that provides a little extra
 safety and convenience. 
 
 Also, this library is a single self-contained C file for easily adding to
@@ -14,7 +14,7 @@ exising projects.
 ## Usage
 
 ```C
-// ryu_print converts a double into a string representation that is copied
+// ryu_string converts a double into a string representation that is copied
 // into the provided C string buffer.
 //
 // Returns the number of characters, not including the null-terminator, needed
@@ -23,16 +23,16 @@ exising projects.
 // occurred.
 // 
 // The fmt argument can be 'f' for full decimal or 'e' for scientific notation.
-size_t ryu_print(double d, char fmt, char *dst, size_t nbytes)
+size_t ryu_string(double d, char fmt, char *dst, size_t nbytes)
 ```
 
 ## Example
 
 ```C
 char buf[32];
-size_t n = ryu_print(-112.89123883, 'f', buf, sizeof(buf));
+size_t n = ryu_string(-112.89123883, 'f', buf, sizeof(buf));
 if (n >= sizeof(buf)) {
-	// Buffer is too small to.
+	// Buffer is too small to store the floating point as a string.
 }
 printf("%s\n", buf);
 
@@ -62,7 +62,7 @@ is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
 KIND, either express or implied.
 ```
 
-The `ryu_print` function:
+The `ryu_string` function:
 
 ```
 Copyright (c) 2023 Josh Baker

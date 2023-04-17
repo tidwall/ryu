@@ -7,7 +7,7 @@
 
 #define test(fmt, input, expected) { \
     char buf[256]; \
-    ryu_print((input), (fmt), buf, sizeof(buf)); \
+    ryu_string((input), (fmt), buf, sizeof(buf)); \
     if (strcmp(buf, (expected)) != 0) { \
         fprintf(stderr, "line %d: expected %s, got %s\n", \
             __LINE__, (expected), buf); \
@@ -40,19 +40,19 @@ int main(void) {
     test('f', 5123.0, "5123");
 
     char buf[32];
-    size_t n1 = ryu_print(-112.89123883, 'f', buf, sizeof(buf));
+    size_t n1 = ryu_string(-112.89123883, 'f', buf, sizeof(buf));
     assert(strcmp(buf, "-112.89123883") == 0);
-    size_t n2 = ryu_print(-112.89123883, 'f', NULL, 0);
+    size_t n2 = ryu_string(-112.89123883, 'f', NULL, 0);
     assert(n1 == n2);
-    size_t n3 = ryu_print(-112.89123883, 'f', buf, 5);
+    size_t n3 = ryu_string(-112.89123883, 'f', buf, 5);
     assert(n3 == n2);
     assert(strcmp(buf, "-112") == 0);
 
-    ryu_print(-112.89123883, 'f', buf, 1);
+    ryu_string(-112.89123883, 'f', buf, 1);
     assert(strcmp(buf, "") == 0);
-    ryu_print(-112.89123883, 'f', buf, 2);
+    ryu_string(-112.89123883, 'f', buf, 2);
     assert(strcmp(buf, "-") == 0);
-    ryu_print(-112.89123883, 'f', buf, 6);
+    ryu_string(-112.89123883, 'f', buf, 6);
     assert(strcmp(buf, "-112.") == 0);
 
     return 0;
