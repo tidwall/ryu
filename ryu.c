@@ -1819,8 +1819,9 @@ static void d2s_buffered(double f, char* result) {
     result[index] = '\0';
 }
 
+#ifndef RYU_NOWRITER
 struct writer {
-    char *dst;
+    uint8_t *dst;
     size_t n;
     size_t count;
 };
@@ -1834,10 +1835,11 @@ static void write_char(struct writer *wr, char b) {
     if (wr->count < wr->n) wr->dst[wr->count] = b;
     wr->count++;
 }
+#endif
 
 RYU_EXTERN
 size_t ryu_string(double d, char fmt, char dst[], size_t nbytes) {
-    struct writer wr = { .dst = dst, .n = nbytes };
+    struct writer wr = { .dst = (uint8_t*)dst, .n = nbytes };
     char buf[80];
     switch (fmt) {
     case 'f': case 'e': case 'E':
