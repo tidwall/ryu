@@ -1840,21 +1840,45 @@ static void write_char(struct writer *wr, char b) {
 RYU_EXTERN
 size_t ryu_string(double d, char fmt, char dst[], size_t nbytes) {
     struct writer wr = { .dst = (uint8_t*)dst, .n = nbytes };
-    char buf[80];
+    char buf[25];
+    bool f = true;
+    bool g = false;
+    bool j = false;
+    char ech = 'e';
     switch (fmt) {
-    case 'f': case 'e': case 'E':
+    case 'j': case 'J':
+        fmt -= 3;
+        j = true;
+        // fall through
+    case 'g': case 'G':
+        fmt -= 2;
+        g = true;
+        // fall through
+    case 'e': case 'E':
+        f = g;
+        if (fmt == 'E') ech = 'E';
+        // fall through
+    case 'f':
         d2s_buffered(d, buf);
         break;
     default:
         buf[0] = '\0';
     }
+    bool neg = false;
     char *p = buf;
     if (p[0] == '-') {
         write_char(&wr, '-');
         p++;
+        neg = true;
     }
-    char *e = strchr(p, 'E');
-    if (!e) e = strchr(p, 'e');
+    char *end = p;
+    char *e = NULL;
+    while (*end) {
+        if (*end >= 'E' && (*end == 'E' || *end == 'e')) {
+            e = end;
+        }
+        end++;
+    } 
     if (!e) {
         if (*p == 'i' || *p == 'I') {
             strcpy(p, "Infinity");
@@ -1864,44 +1888,68 @@ size_t ryu_string(double d, char fmt, char dst[], size_t nbytes) {
             *p = '\0';
         }
         while (*p) write_char(&wr, *(p++));
-    } else if (fmt == 'e' || fmt == 'E') {
+        write_nullterm(&wr);
+        return wr.count;
+    }
+    if (!f) {
         *e = '\0';
         while (*p) write_char(&wr, *(p++));
-        write_char(&wr, fmt);
+        write_char(&wr, ech);
         p++;
+        if (j && *p != '-') write_char(&wr, '+');
         while (*p) write_char(&wr, *(p++));
-    } else { // 'f'
-        int en = atoi(e+1);
-        *e = '\0';
-        if (en < 0) {
+        write_nullterm(&wr);
+        return wr.count;
+    }
+    int en = atoi(e+1);
+    *e = '\0';
+    if (en < 0) {
+        write_char(&wr, '0');
+        write_char(&wr, '.');
+        en = -en;
+        for (int i = 0; i < en-1; i++) {
             write_char(&wr, '0');
-            write_char(&wr, '.');
-            en = -en;
-            for (int i = 0; i < en-1; i++) {
+        }
+        write_char(&wr, *(p++));
+        if (*p) {
+            p++;
+            while (*p) write_char(&wr, *(p++));
+        }
+    } else {
+        write_char(&wr, *(p++));
+        if (*p) p++;
+        for (int i = 0; i < en; i++) {
+            if (*p) {
+                write_char(&wr, *(p++));
+            } else {
                 write_char(&wr, '0');
             }
-            write_char(&wr, *(p++));
-            if (*p) {
-                p++;
-                while (*p) write_char(&wr, *(p++));
-            }
-        } else {
-            write_char(&wr, *(p++));
-            if (*p) p++;
-            for (int i = 0; i < en; i++) {
-                if (*p) {
-                    write_char(&wr, *(p++));
-                } else {
-                    write_char(&wr, '0');
-                }
-            }
-            
-            if (*p && !(*p == '0' && *(p+1) == '\0')) {
-                write_char(&wr, '.');
-                while (*p) write_char(&wr, *(p++));
-            }
+        }
+        if (*p && !(*p == '0' && *(p+1) == '\0')) {
+            write_char(&wr, '.');
+            while (*p) write_char(&wr, *(p++));
         }
     }
     write_nullterm(&wr);
+    if (g) {
+        bool rewrite = false;
+        if (j) {
+            rewrite = neg ? wr.count > 22 : wr.count > 21;
+        } else {
+            rewrite = (size_t)(end-buf) < wr.count;
+        }
+        if (rewrite) {
+            // rewind and rewrite the buffer
+            wr = (struct writer){ .dst = (uint8_t*)dst, .n = nbytes };
+            p = buf;
+            *e = '\0';
+            while (*p) write_char(&wr, *(p++));
+            write_char(&wr, ech);
+            p++;
+            if (j && *p != '-') write_char(&wr, '+');
+            while (*p) write_char(&wr, *(p++));
+            write_nullterm(&wr);
+        }
+    }
     return wr.count;
 }
